@@ -1,7 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
-import { Login } from '../screens/Login'; // <-- Importas tu login
+import { Login } from '../screens/Login';
 import { Progreso } from '../screens/Progreso';
 import { Inicio } from '../screens/Inicio';
 import { Entrenamientos } from '../screens/Entrenamientos';
@@ -15,7 +15,7 @@ export function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator 
         initialRouteName="Login" 
-        screenOptions={{ headerShown: true }}
+        screenOptions={{ headerShown: true, animation: 'none' }}
       >
         <Stack.Screen 
           name="Login" 

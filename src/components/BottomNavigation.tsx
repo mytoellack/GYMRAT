@@ -79,11 +79,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeButton: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: 'transparent',
   },
   iconImage: {
-    width: 26,
-    height: 26,
+    width: 40,
+    height: 40,
     resizeMode: 'contain',
   },
 });
