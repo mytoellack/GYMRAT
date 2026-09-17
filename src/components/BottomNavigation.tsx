@@ -1,9 +1,12 @@
 import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppStackParamList } from '../types/navigation';
 
+import home from '../images/home.png';
+import rutines from '../images/rutines.png';
+import progreso from '../images/progreso.png';
 type NavigationProp = NativeStackNavigationProp<AppStackParamList>;
 
 export function BottomNavigation() {
@@ -18,23 +21,41 @@ export function BottomNavigation() {
         style={[styles.navButton, currentScreen === 'Inicio' && styles.activeButton]} 
         onPress={() => navigation.navigate('Inicio')}
       >
-        <Text style={styles.icon}>🏠</Text>
+        <Image 
+          source={home} 
+          style={[
+            styles.iconImage, 
+            { tintColor: currentScreen === 'Inicio' ? '#A3E635' : '#9CA3AF' }
+          ]} 
+        />
       </TouchableOpacity>
 
-      {/* Botón Entrenamientos */}
+      {/* Botón Entrenamientos (Usa la casita temporalmente) */}
       <TouchableOpacity 
         style={[styles.navButton, currentScreen === 'Entrenamientos' && styles.activeButton]} 
         onPress={() => navigation.navigate('Entrenamientos')}
       >
-        <Text style={styles.icon}>🏋️‍♂️</Text>
+        <Image 
+          source={rutines} 
+          style={[
+            styles.iconImage, 
+            { tintColor: currentScreen === 'Entrenamientos' ? '#A3E635' : '#9CA3AF' }
+          ]} 
+        />
       </TouchableOpacity>
 
-      {/* Botón Principal */}
+      {/* Botón Progreso (Usa la casita temporalmente) */}
       <TouchableOpacity 
         style={[styles.navButton, currentScreen === 'Progreso' && styles.activeButton]} 
         onPress={() => navigation.navigate('Progreso')}
       >
-        <Text style={styles.icon}>📈</Text>
+        <Image 
+          source={progreso} 
+          style={[
+            styles.iconImage, 
+            { tintColor: currentScreen === 'Progreso' ? '#A3E635' : '#9CA3AF' }
+          ]} 
+        />
       </TouchableOpacity>
     </View>
   );
@@ -46,8 +67,7 @@ const styles = StyleSheet.create({
     height: 65,
     backgroundColor: '#1E1E1E',
     borderTopWidth: 1,
-    borderTopColor:  '#65A30D',
-
+    borderTopColor: '#65A30D',
     justifyContent: 'space-around',
     alignItems: 'center',
     paddingBottom: 5,
@@ -61,7 +81,9 @@ const styles = StyleSheet.create({
   activeButton: {
     backgroundColor: '#2A2A2A',
   },
-  icon: {
-    fontSize: 24,
+  iconImage: {
+    width: 26,
+    height: 26,
+    resizeMode: 'contain',
   },
 });
