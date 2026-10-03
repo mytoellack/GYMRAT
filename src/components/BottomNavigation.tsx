@@ -7,6 +7,7 @@ import { AppStackParamList } from '../types/navigation';
 import home from '../images/home.png';
 import rutines from '../images/rutines.png';
 import progreso from '../images/progreso.png';
+
 type NavigationProp = NativeStackNavigationProp<AppStackParamList>;
 
 export function BottomNavigation() {
@@ -30,7 +31,7 @@ export function BottomNavigation() {
         />
       </TouchableOpacity>
 
-      {/* Botón Entrenamientos (Usa la casita temporalmente) */}
+      {/* Botón Entrenamientos*/}
       <TouchableOpacity 
         style={[styles.navButton, currentScreen === 'Entrenamientos' && styles.activeButton]} 
         onPress={() => navigation.navigate('Entrenamientos')}
@@ -44,7 +45,7 @@ export function BottomNavigation() {
         />
       </TouchableOpacity>
 
-      {/* Botón Progreso (Usa la casita temporalmente) */}
+      {/* Botón Progreso */}
       <TouchableOpacity 
         style={[styles.navButton, currentScreen === 'Progreso' && styles.activeButton]} 
         onPress={() => navigation.navigate('Progreso')}

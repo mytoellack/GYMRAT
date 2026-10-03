@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { Login } from '../screens/Login';
+import { Register } from '../screens/Register'; // <--- 1. Importa la pantalla Register
 import { Progreso } from '../screens/Progreso';
 import { Inicio } from '../screens/Inicio';
 import { Entrenamientos } from '../screens/Entrenamientos';
@@ -20,7 +21,12 @@ export function AppNavigator() {
         <Stack.Screen 
           name="Login" 
           component={Login} 
-          options={{ headerShown: false }} 
+          options={{ headerShown: true }} 
+        />
+        {/* 2. Añade esta línea dentro del Stack.Navigator */}
+        <Stack.Screen 
+          name="Register" 
+          component={Register} 
         />
         <Stack.Screen 
           name="Inicio" 
