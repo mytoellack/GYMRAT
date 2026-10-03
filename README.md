@@ -1,2 +1,2 @@
 # GymRat
-Aplicación móvil de entrenamiento desarrollada en React Native.git add .
+Aplicación móvil de entrenamiento desarrollada en React Native.
