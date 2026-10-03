@@ -1,0 +1,117 @@
+{
+  "info": {
+    "name": "GYMRAT API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"thomas@test.com\",\n  \"password\": \"123456\"\n}"
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('token', pm.response.json().token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listar entrenamientos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/entrenamientos"
+      }
+    },
+    {
+      "name": "Crear entrenamiento",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/entrenamientos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Pecho y tríceps\",\n  \"ejercicios\": [\n    {\n      \"nombre\": \"Press banca\",\n      \"series\": 4,\n      \"reps\": 10,\n      \"peso\": 60\n    }\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "Progreso",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/progreso"
+      }
+    },
+    {
+      "name": "Obtener perfil",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/perfil"
+      }
+    },
+    {
+      "name": "Actualizar perfil",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/perfil",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Thomas Calle\"\n}"
+        }
+      }
+    }
+  ]
+}

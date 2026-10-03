@@ -4,24 +4,31 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppStackParamList } from '../types/navigation';
 import { Colors } from '../constants/Colors';
-import { login } from '../services/Auth';
+import { register } from '../services/Auth';
 
 type NavigationProp = NativeStackNavigationProp<AppStackParamList>;
 
-export function Login() {
+export function Register() {
   const navigation = useNavigation<NavigationProp>();
+  const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState(''); // <--- Nuevo estado
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      return Alert.alert('Error', 'Ingresa tu correo y contraseña');
+  const handleRegister = async () => {
+    if (!nombre || !email || !password || !confirmPassword) {
+      return Alert.alert('Error', 'Completa todos los campos');
     }
+
+    if (password !== confirmPassword) {
+      return Alert.alert('Error', 'Las contraseñas no coinciden');
+    }
+
     setLoading(true);
     try {
-      await login(email.trim().toLowerCase(), password);
-      navigation.replace('Inicio');
+      await register(nombre.trim(), email.trim().toLowerCase(), password);
+      navigation.reset({ index: 0, routes: [{ name: 'Inicio' }] });
     } catch (e: any) {
       Alert.alert('Error', e.message);
     } finally {
@@ -32,7 +39,15 @@ export function Login() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>GYMRAT</Text>
-      <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
+      <Text style={styles.subtitle}>Crea tu cuenta</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Nombre"
+        placeholderTextColor={Colors.textSecondary}
+        value={nombre}
+        onChangeText={setNombre}
+      />
 
       <TextInput
         style={styles.input}
@@ -53,13 +68,22 @@ export function Login() {
         secureTextEntry
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-        <Text style={styles.buttonText}>{loading ? 'Ingresando...' : 'Iniciar Sesión'}</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Confirmar contraseña"
+        placeholderTextColor={Colors.textSecondary}
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+        secureTextEntry
+      />
+
+      <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
+        <Text style={styles.buttonText}>{loading ? 'Creando cuenta...' : 'Registrarse'}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('Register')} disabled={loading}>
+      <TouchableOpacity onPress={() => navigation.goBack()} disabled={loading}>
         <Text style={styles.link}>
-          ¿No tienes cuenta? <Text style={styles.linkAccent}>Regístrate</Text>
+          ¿Ya tienes cuenta? <Text style={styles.linkAccent}>Inicia sesión</Text>
         </Text>
       </TouchableOpacity>
     </View>

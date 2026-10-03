@@ -1,0 +1,14 @@
+CREATE TABLE usuarios (
+  id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL
+);
+
+CREATE TABLE entrenamientos (
+  id SERIAL PRIMARY KEY,
+  usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  nombre TEXT NOT NULL,
+  ejercicios JSONB NOT NULL DEFAULT '[]',
+  fecha DATE NOT NULL DEFAULT CURRENT_DATE
+);
