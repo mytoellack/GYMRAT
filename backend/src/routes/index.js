@@ -12,6 +12,7 @@ router.use(verificarToken); // todo lo de abajo requiere token
 
 router.get('/entrenamientos', entrenamientos.listar);
 router.post('/entrenamientos', entrenamientos.crear);
+router.delete('/entrenamientos/:id', entrenamientos.eliminar);
 router.get('/progreso', progreso.resumen);
 router.get('/perfil', perfil.obtener);
 router.put('/perfil', perfil.actualizar);
