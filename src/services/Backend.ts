@@ -2,8 +2,9 @@ import * as SecureStore from 'expo-secure-store';
 import { API_URL } from '../constants/Api';
 
 export type Ejercicio = { nombre: string; series: number; reps: number; peso: number };
-export type Entrenamiento = { id: number; nombre: string; ejercicios: Ejercicio[]; dia_semana: number };
-export type ResumenProgreso = { total: number; semanas: { semana: string; sesiones: number }[] };
+export type Entrenamiento = { id: number; nombre: string; ejercicios: Ejercicio[]; dia_semana: number; terminado_hoy: boolean };
+export type Racha = { actual: number; mejor: number; entrenoHoy: boolean };
+export type ResumenProgreso = { total: number; semanas: { semana: string; sesiones: number }[]; racha: Racha };
 export type Usuario = { id: number; nombre: string; email: string };
 
 class ErrorApi extends Error {
@@ -48,4 +49,10 @@ export const obtenerProgreso = () => pedir<ResumenProgreso>('/progreso');
 export const obtenerPerfil = () => pedir<Usuario>('/perfil');
 export const actualizarPerfil = (datos: { nombre?: string; email?: string }) =>
   pedir<Usuario>('/perfil', 'PUT', datos);
+export const cambiarPassword = (passwordActual: string, passwordNueva: string) =>
+  pedir<void>('/perfil/password', 'PUT', { passwordActual, passwordNueva });
 export const cerrarSesion = () => SecureStore.deleteItemAsync('token');
+export const terminarEntrenamiento = (id: number) =>
+  pedir<{ id: number; fecha: string }>(`/entrenamientos/${id}/terminar`, 'POST');
+export const actualizarEntrenamiento = (id: number, nombre: string, ejercicios: Ejercicio[], dia_semana: number) =>
+  pedir<Entrenamiento>(`/entrenamientos/${id}`, 'PUT', { nombre, ejercicios, dia_semana });

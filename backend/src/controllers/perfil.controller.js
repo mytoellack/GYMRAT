@@ -7,3 +7,8 @@ exports.obtener = async (req, res) => {
 exports.actualizar = async (req, res) => {
   res.json(await service.actualizar(req.userId, req.body));
 };
+
+exports.cambiarPassword = async (req, res) => {
+  await service.cambiarPassword(req.userId, req.body);
+  res.status(204).end();
+};
