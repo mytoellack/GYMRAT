@@ -20,6 +20,7 @@ export function Progreso() {
   }, [manejarError]));
 
   const max = Math.max(1, ...(datos?.semanas.map((s) => s.sesiones) ?? [1]));
+  const racha = datos?.racha ?? { actual: 0, mejor: 0, entrenoHoy: false };
 
   return (
     <View style={styles.container}>
@@ -32,6 +33,16 @@ export function Progreso() {
 
         {datos && (
           <>
+            <View style={styles.card}>
+              <Text style={styles.total}>🔥 {racha.actual}</Text>
+              <Text style={styles.subtitle}>
+                {racha.actual === 1 ? 'día de racha' : 'días de racha'} · mejor racha: {racha.mejor}
+              </Text>
+              {racha.actual > 0 && !racha.entrenoHoy && (
+                <Text style={styles.aviso}>Entrena hoy para no perder tu racha</Text>
+              )}
+            </View>
+
             <View style={styles.card}>
               <Text style={styles.total}>{datos.total}</Text>
               <Text style={styles.subtitle}>sesiones registradas</Text>
@@ -63,6 +74,7 @@ const styles = StyleSheet.create({
   card: { backgroundColor: '#1E1E1E', borderRadius: 8, borderWidth: 1, borderColor: '#333', padding: 14, marginTop: 12 },
   total: { color: '#84CC16', fontSize: 40, fontWeight: 'bold' },
   item: { color: Colors.textPrimary, fontSize: 14 },
+  aviso: { color: '#FBBF24', fontSize: 13, marginTop: 6 },
   vacio: { color: Colors.textSecondary, textAlign: 'center', marginTop: 30 },
   barra: { height: 8, backgroundColor: '#333', borderRadius: 4, marginTop: 8, overflow: 'hidden' },
   relleno: { height: 8, backgroundColor: '#65A30D', borderRadius: 4 },
