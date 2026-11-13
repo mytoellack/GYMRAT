@@ -1,21 +1,29 @@
-import React, { useCallback, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import React, { useCallback, useRef, useState } from 'react';
+import {
+  View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert,
+  ActivityIndicator, KeyboardAvoidingView, Platform,
+} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import { BottomNavigation } from '../components/BottomNavigation';
 import { PerfilButton } from '../components/PerfilButton';
 import { useManejarError } from '../hooks/useManejarError';
 import { DIAS, diaHoy } from '../utils/fecha';
-import { Entrenamiento, Ejercicio, listarEntrenamientos, crearEntrenamiento, eliminarEntrenamiento } from '../services/Backend';
+import {
+  Entrenamiento, Ejercicio, listarEntrenamientos, crearEntrenamiento,
+  actualizarEntrenamiento, eliminarEntrenamiento,
+} from '../services/Backend';
 
 const EJ_VACIO = { nombre: '', series: '', reps: '', peso: '' };
 const ORDEN = [1, 2, 3, 4, 5, 6, 0]; // semana de lunes a domingo
 
 export function Entrenamientos() {
   const manejarError = useManejarError();
+  const scroll = useRef<any>(null);
   const [lista, setLista] = useState<Entrenamiento[]>([]);
   const [cargando, setCargando] = useState(true);
   const [form, setForm] = useState(false);
+  const [editando, setEditando] = useState<number | null>(null);
   const [nombre, setNombre] = useState('');
   const [dia, setDia] = useState(diaHoy());
   const [ejercicios, setEjercicios] = useState<Ejercicio[]>([]);
@@ -34,6 +42,25 @@ export function Entrenamientos() {
 
   useFocusEffect(useCallback(() => { cargar(); }, [cargar]));
 
+  const limpiar = () => {
+    setNombre('');
+    setDia(diaHoy());
+    setEjercicios([]);
+    setEj(EJ_VACIO);
+    setEditando(null);
+    setForm(false);
+  };
+
+  const editar = (t: Entrenamiento) => {
+    setNombre(t.nombre);
+    setDia(t.dia_semana);
+    setEjercicios(t.ejercicios);
+    setEj(EJ_VACIO);
+    setEditando(t.id);
+    setForm(true);
+    scroll.current?.scrollTo({ y: 0, animated: true });
+  };
+
   const agregarEjercicio = () => {
     if (!ej.nombre.trim()) return Alert.alert('Error', 'Escribe el nombre del ejercicio');
     setEjercicios([...ejercicios, {
@@ -45,15 +72,18 @@ export function Entrenamientos() {
     setEj(EJ_VACIO);
   };
 
+  const corregirEjercicio = (x: Ejercicio, i: number) => {
+    setEj({ nombre: x.nombre, series: String(x.series), reps: String(x.reps), peso: String(x.peso) });
+    setEjercicios(ejercicios.filter((_, j) => j !== i));
+  };
+
   const guardar = async () => {
     if (!nombre.trim()) return Alert.alert('Error', 'Escribe el nombre del entrenamiento');
     setGuardando(true);
     try {
-      await crearEntrenamiento(nombre.trim(), ejercicios, dia);
-      setNombre('');
-      setDia(diaHoy());
-      setEjercicios([]);
-      setForm(false);
+      if (editando) await actualizarEntrenamiento(editando, nombre.trim(), ejercicios, dia);
+      else await crearEntrenamiento(nombre.trim(), ejercicios, dia);
+      limpiar();
       await cargar();
     } catch (e) {
       manejarError(e);
@@ -72,6 +102,7 @@ export function Entrenamientos() {
           try {
             await eliminarEntrenamiento(t.id);
             setLista((prev) => prev.filter((x) => x.id !== t.id));
+            if (editando === t.id) limpiar();
           } catch (e) {
             manejarError(e);
           }
@@ -82,72 +113,83 @@ export function Entrenamientos() {
   return (
     <View style={styles.container}>
       <PerfilButton />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
-          <Text style={styles.title}>Entrenamientos</Text>
-          <TouchableOpacity style={styles.addButton} onPress={() => setForm(!form)}>
-            <Text style={styles.addText}>{form ? 'Cancelar' : '+ Nuevo'}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {form && (
-          <View style={styles.card}>
-            <TextInput style={styles.input} placeholder="Nombre (ej. Pierna)" placeholderTextColor={Colors.textSecondary} value={nombre} onChangeText={setNombre} />
-
-            <Text style={styles.label}>Se repite todos los...</Text>
-            <View style={styles.dias}>
-              {ORDEN.map((d) => (
-                <TouchableOpacity key={d} style={[styles.chip, dia === d && styles.chipSel]} onPress={() => setDia(d)}>
-                  <Text style={[styles.chipText, dia === d && styles.chipTextSel]}>{DIAS[d].slice(0, 3)}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {ejercicios.map((x, i) => (
-              <View key={i} style={styles.filaEj}>
-                <Text style={[styles.item, { flex: 1 }]}>• {x.nombre} — {x.series}x{x.reps} · {x.peso} kg</Text>
-                <TouchableOpacity onPress={() => setEjercicios(ejercicios.filter((_, j) => j !== i))}>
-                  <Text style={styles.quitar}>✕</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-
-            <TextInput style={styles.input} placeholder="Ejercicio" placeholderTextColor={Colors.textSecondary} value={ej.nombre} onChangeText={(t) => setEj({ ...ej, nombre: t })} />
-            <View style={styles.row}>
-              <TextInput style={[styles.input, styles.small]} placeholder="Series" placeholderTextColor={Colors.textSecondary} keyboardType="numeric" value={ej.series} onChangeText={(t) => setEj({ ...ej, series: t })} />
-              <TextInput style={[styles.input, styles.small]} placeholder="Reps" placeholderTextColor={Colors.textSecondary} keyboardType="numeric" value={ej.reps} onChangeText={(t) => setEj({ ...ej, reps: t })} />
-              <TextInput style={[styles.input, styles.small]} placeholder="Kg" placeholderTextColor={Colors.textSecondary} keyboardType="numeric" value={ej.peso} onChangeText={(t) => setEj({ ...ej, peso: t })} />
-            </View>
-
-            <TouchableOpacity style={styles.secondary} onPress={agregarEjercicio}>
-              <Text style={styles.secondaryText}>Agregar ejercicio</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={guardar} disabled={guardando}>
-              <Text style={styles.buttonText}>{guardando ? 'Guardando...' : 'Guardar entrenamiento'}</Text>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView ref={scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <View style={styles.header}>
+            <Text style={styles.title}>Entrenamientos</Text>
+            <TouchableOpacity style={styles.addButton} onPress={() => (form ? limpiar() : setForm(true))}>
+              <Text style={styles.addText}>{form ? 'Cancelar' : '+ Nuevo'}</Text>
             </TouchableOpacity>
           </View>
-        )}
 
-        {cargando && <ActivityIndicator color="#84CC16" style={{ marginTop: 30 }} />}
-        {!cargando && lista.length === 0 && <Text style={styles.vacio}>Aún no tienes entrenamientos</Text>}
+          {form && (
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>{editando ? 'Editar entrenamiento' : 'Nuevo entrenamiento'}</Text>
+              <TextInput style={styles.input} placeholder="Nombre (ej. Pierna)" placeholderTextColor={Colors.textSecondary} value={nombre} onChangeText={setNombre} />
 
-        {lista.map((t) => (
-          <View key={t.id} style={styles.card}>
-            <View style={styles.row}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.cardTitle}>{t.nombre}</Text>
-                <Text style={styles.fecha}>Todos los {DIAS[t.dia_semana].toLowerCase()}{t.dia_semana === diaHoy() ? ' · HOY' : ''}</Text>
+              <Text style={styles.label}>Se repite todos los...</Text>
+              <View style={styles.dias}>
+                {ORDEN.map((d) => (
+                  <TouchableOpacity key={d} style={[styles.chip, dia === d && styles.chipSel]} onPress={() => setDia(d)}>
+                    <Text style={[styles.chipText, dia === d && styles.chipTextSel]}>{DIAS[d].slice(0, 3)}</Text>
+                  </TouchableOpacity>
+                ))}
               </View>
-              <TouchableOpacity style={styles.eliminar} onPress={() => confirmarEliminar(t)}>
-                <Text style={styles.eliminarText}>Eliminar</Text>
+
+              {ejercicios.length > 0 && <Text style={styles.label}>Toca un ejercicio para corregirlo</Text>}
+              {ejercicios.map((x, i) => (
+                <View key={i} style={styles.filaEj}>
+                  <TouchableOpacity style={{ flex: 1 }} onPress={() => corregirEjercicio(x, i)}>
+                    <Text style={styles.item}>{x.nombre} — {x.series}x{x.reps} · {x.peso} kg</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setEjercicios(ejercicios.filter((_, j) => j !== i))}>
+                    <Text style={styles.quitar}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+
+              <TextInput style={styles.input} placeholder="Ejercicio" placeholderTextColor={Colors.textSecondary} value={ej.nombre} onChangeText={(t) => setEj({ ...ej, nombre: t })} />
+              <View style={styles.row}>
+                <TextInput style={[styles.input, styles.small]} placeholder="Series" placeholderTextColor={Colors.textSecondary} keyboardType="numeric" value={ej.series} onChangeText={(t) => setEj({ ...ej, series: t })} />
+                <TextInput style={[styles.input, styles.small]} placeholder="Reps" placeholderTextColor={Colors.textSecondary} keyboardType="numeric" value={ej.reps} onChangeText={(t) => setEj({ ...ej, reps: t })} />
+                <TextInput style={[styles.input, styles.small]} placeholder="Kg" placeholderTextColor={Colors.textSecondary} keyboardType="numeric" value={ej.peso} onChangeText={(t) => setEj({ ...ej, peso: t })} />
+              </View>
+
+              <TouchableOpacity style={styles.secondary} onPress={agregarEjercicio}>
+                <Text style={styles.secondaryText}>Agregar ejercicio</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.button} onPress={guardar} disabled={guardando}>
+                <Text style={styles.buttonText}>
+                  {guardando ? 'Guardando...' : editando ? 'Guardar cambios' : 'Guardar entrenamiento'}
+                </Text>
               </TouchableOpacity>
             </View>
-            {t.ejercicios.map((x, i) => (
-              <Text key={i} style={styles.item}>• {x.nombre} — {x.series}x{x.reps} · {x.peso} kg</Text>
-            ))}
-          </View>
-        ))}
-      </ScrollView>
+          )}
+
+          {cargando && <ActivityIndicator color="#84CC16" style={{ marginTop: 30 }} />}
+          {!cargando && lista.length === 0 && <Text style={styles.vacio}>Aún no tienes entrenamientos</Text>}
+
+          {lista.map((t) => (
+            <View key={t.id} style={styles.card}>
+              <View style={styles.row}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.cardTitle}>{t.nombre}</Text>
+                  <Text style={styles.fecha}>Todos los {DIAS[t.dia_semana].toLowerCase()}{t.dia_semana === diaHoy() ? ' · HOY' : ''}</Text>
+                </View>
+                <TouchableOpacity style={styles.editar} onPress={() => editar(t)}>
+                  <Text style={styles.editarText}>Editar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.eliminar} onPress={() => confirmarEliminar(t)}>
+                  <Text style={styles.eliminarText}>Eliminar</Text>
+                </TouchableOpacity>
+              </View>
+              {t.ejercicios.map((x, i) => (
+                <Text key={i} style={styles.item}>{x.nombre} — {x.series}x{x.reps} · {x.peso} kg</Text>
+              ))}
+            </View>
+          ))}
+        </ScrollView>
+      </KeyboardAvoidingView>
       <BottomNavigation />
     </View>
   );
@@ -155,7 +197,7 @@ export function Entrenamientos() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  content: { padding: 20, paddingTop: 70 },
+  content: { padding: 20, paddingTop: 70, paddingBottom: 40 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   title: { color: Colors.textPrimary, fontSize: 24, fontWeight: 'bold' },
   addButton: { backgroundColor: '#65A30D', paddingVertical: 8, paddingHorizontal: 14, borderRadius: 8 },
@@ -180,6 +222,8 @@ const styles = StyleSheet.create({
   buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 15 },
   secondary: { borderWidth: 1, borderColor: '#84CC16', height: 44, borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginTop: 12 },
   secondaryText: { color: '#84CC16', fontWeight: 'bold' },
+  editar: { borderWidth: 1, borderColor: '#84CC16', borderRadius: 8, paddingVertical: 6, paddingHorizontal: 10 },
+  editarText: { color: '#84CC16', fontWeight: 'bold', fontSize: 12 },
   eliminar: { borderWidth: 1, borderColor: '#DC2626', borderRadius: 8, paddingVertical: 6, paddingHorizontal: 10 },
   eliminarText: { color: '#DC2626', fontWeight: 'bold', fontSize: 12 },
 });
