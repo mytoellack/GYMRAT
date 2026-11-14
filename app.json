@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "gymrat",
+    "name": "GYMRAT",
     "slug": "gymrat",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,20 +10,23 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.thomascalle.gymrat",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#1B2534",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
     "plugins": [
       "expo-secure-store",
       "expo-status-bar"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "32143436-e71b-4ba5-9e4c-84af7d532f82"
+      }
+    }
   }
 }
