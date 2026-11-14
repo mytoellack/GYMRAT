@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import * as SecureStore from 'expo-secure-store';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -10,6 +11,7 @@ import { Inicio } from '../screens/Inicio';
 import { Entrenamientos } from '../screens/Entrenamientos';
 import { Perfil } from '../screens/Perfil';
 import { AppStackParamList } from '../types/navigation';
+import { Colors } from '../constants/Colors';
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
@@ -17,29 +19,33 @@ export function AppNavigator() {
   const [rutaInicial, setRutaInicial] = useState<'Login' | 'Inicio' | null>(null);
 
   useEffect(() => {
-    // Al abrir la app: si hay un token guardado, entra directo a Inicio.
     SecureStore.getItemAsync('token')
       .then((token) => setRutaInicial(token ? 'Inicio' : 'Login'))
       .catch(() => setRutaInicial('Login'));
   }, []);
 
-  // Mientras se lee el token, se muestra una pantalla de carga
   if (rutaInicial === null) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background }}>
+        <ActivityIndicator size="large" color={Colors.accent} />
       </View>
     );
   }
 
   return (
     <NavigationContainer>
+      <StatusBar style="light" />
       <Stack.Navigator
         initialRouteName={rutaInicial}
-        screenOptions={{ headerShown: true, animation: 'none' }}
+        screenOptions={{
+          animation: 'none',
+          headerStyle: { backgroundColor: Colors.background },
+          headerTintColor: Colors.textPrimary,
+          headerShadowVisible: false,
+        }}
       >
-        <Stack.Screen name="Login" component={Login} options={{ headerShown: true }} />
-        <Stack.Screen name="Register" component={Register} />
+        <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+        <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
         <Stack.Screen name="Inicio" component={Inicio} />
         <Stack.Screen name="Entrenamientos" component={Entrenamientos} />
         <Stack.Screen name="Progreso" component={Progreso} />
