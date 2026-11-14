@@ -18,7 +18,7 @@ class ErrorApi extends Error {
 async function pedir<T>(ruta: string, metodo = 'GET', body?: object): Promise<T> {
   const token = await SecureStore.getItemAsync('token');
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000);
+  const timer = setTimeout(() => controller.abort(), 60000);
 
   try {
     const res = await fetch(`${API_URL}${ruta}`, {
